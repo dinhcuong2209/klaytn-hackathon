@@ -1,0 +1,36 @@
+version: '3'
+services:
+  db:
+    image: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MONGO_INITDB_DATABASE: mongo
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    volumes:
+      - mongo:/data/db
+    logging:
+      driver: none
+  cache:
+    image: redis:7.0.12-alpine
+    restart: unless-stopped
+    expose:
+      - 6379
+    logging:
+      driver: none
+  app:
+    build: .
+    container_name: app
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/app
+      - /var/www/app/node_modules
+    depends_on:
+      - db
+      - cache
+volumes:
+  mongo:
